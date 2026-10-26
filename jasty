@@ -1,0 +1,547 @@
+Here’s a longer Java program: a word guessing game with categories, input checa.util.HashSet;
+
+import java.util.List;
+
+import java.util.Random;
+
+import java.util.Scanner;
+
+import java.util.Set;SES = 7;
+ = new Random();
+
+    private static final Scanner INPUT = new Scanner(System.in);
+
+
+
+    private static final List<String> ANIMALS = Arrays.asList(
+
+        "elephant", "giraffe", "penguin", "dolphin", "butterfly",
+
+        "kangaroo", "tortoise", "octopus", "hedgehog", "flamingo"
+
+    );
+
+
+
+    private static final List<String> PLACES = Arrays.asList(
+
+        "mountain", "library", "waterfall", "desert", "island",
+
+        "village", "harbor", "museum", "rainforest", "countryside"
+
+    );
+
+
+
+    private static final List<String> THINGS = Arrays.asList(
+
+        "telescope", "backpack", "lantern", "compass", "notebook",
+
+        "bicycle", "teapot", "keyboard", "suitcase", "hourglass"
+
+    );
+
+
+
+    private static final List<Category> CATEGORIES = Arrays.asList(
+
+        new Category("Animals", ANIMALS),
+
+        new Category("Places", PLACES),
+
+        new Category("Things", THINGS)
+
+    );
+
+
+
+    private static class Category {
+
+        private final String name;
+
+        private final List<String> words;
+
+
+
+        Category(String name, List<String> words) {
+
+            this.name = name;
+
+            this.words = words;
+
+        }
+
+
+
+        String getName() {
+
+            return name;
+
+        }
+
+
+
+        String getRandomWord() {
+
+            return words.get(RANDOM.nextInt(words.size()));
+
+        }
+
+    }
+
+
+
+    private static class GameResult {
+
+        private final boolean won;
+
+        private final String word;
+
+        private final int wrongGuesses;
+
+
+
+        GameResult(boolean won, String word, int wrongGuesses) {
+
+            this.won = won;
+
+            this.word = word;
+
+            this.wrongGuesses = wrongGuesses;
+
+        }
+
+
+
+        boolean isWon() {
+
+            return won;
+
+        }
+
+
+
+        String getWord() {
+
+            return word;
+
+        }
+
+
+
+        int getWrongGuesses() {
+
+            return wrongGuesses;
+
+        }
+
+    }
+
+
+
+    public static void main(String[] args) {
+
+        printWelcome();
+
+
+
+        int roundsPlayed = 0;
+
+        int roundsWon = 0;
+
+        int totalWrongGuesses = 0;
+
+
+
+        boolean playAgain = true;
+
+
+
+        while (playAgain) {
+
+            roundsPlayed++;
+
+
+
+            GameResult result = playRound();
+
+
+
+            if (result.isWon()) {
+
+                roundsWon++;
+
+                System.out.println("\nYou guessed the word: " + result.getWord());
+
+            } else {
+
+                System.out.println("\nThe word was: " + result.getWord());
+
+            }
+
+
+
+            totalWrongGuesses += result.getWrongGuesses();
+
+            playAgain = askToPlayAgain();
+
+        }
+
+
+
+        printSummary(roundsPlayed, roundsWon, totalWrongGuesses);
+
+        INPUT.close();
+
+    }
+
+
+
+    private static void printWelcome() {
+
+        System.out.println("======================================");
+
+        System.out.println("       WORD GUESSING CHALLENGE");
+
+        System.out.println("======================================");
+
+        System.out.println("Guess the hidden word one letter at a time.");
+
+        System.out.println("You can make up to " + MAX_WRONG_GUESSES + " incorrect guesses.");
+
+    }
+
+
+
+    private static GameResult playRound() {
+
+        Category category = chooseCategory();
+
+        String secretWord = category.getRandomWord();
+
+
+
+        Set<Character> guessedLetters = new HashSet<>();
+
+        int wrongGuesses = 0;
+
+
+
+        System.out.println("\n--------------------------------------");
+
+        System.out.println("Category: " + category.getName());
+
+        System.out.println("The word has " + secretWord.length() + " letters.");
+
+
+
+        while (wrongGuesses < MAX_WRONG_GUESSES) {
+
+            printRoundStatus(secretWord, guessedLetters, wrongGuesses);
+
+
+
+            char guess = readLetter(guessedLetters);
+
+            guessedLetters.add(guess);
+
+
+
+            if (secretWord.indexOf(guess) >= 0) {
+
+                System.out.println("Correct! The letter '" + guess + "' is in the word.");
+
+            } else {
+
+                wrongGuesses++;
+
+                System.out.println("Sorry, '" + guess + "' is not in the word.");
+
+            }
+
+
+
+            if (hasGuessedWord(secretWord, guessedLetters)) {
+
+                return new GameResult(true, secretWord, wrongGuesses);
+
+            }
+
+        }
+
+
+
+        return new GameResult(false, secretWord, wrongGuesses);
+
+    }
+
+
+
+    private static Category chooseCategory() {
+
+        return CATEGORIES.get(RANDOM.nextInt(CATEGORIES.size()));
+
+    }
+
+
+
+    private static void printRoundStatus(
+
+        String secretWord,
+
+        Set<Character> guessedLetters,
+
+        int wrongGuesses
+
+    ) {
+
+        System.out.println("\nWord: " + makeHiddenWord(secretWord, guessedLetters));
+
+        System.out.println("Wrong guesses: " + wrongGuesses + "/" + MAX_WRONG_GUESSES);
+
+        System.out.println("Guessed letters: " + formatGuessedLetters(guessedLetters));
+
+    }
+
+
+
+    private static String makeHiddenWord(
+
+        String secretWord,
+
+        Set<Character> guessedLetters
+
+    ) {
+
+        StringBuilder display = new StringBuilder();
+
+
+
+        for (int i = 0; i < secretWord.length(); i++) {
+
+            char letter = secretWord.charAt(i);
+
+
+
+            if (guessedLetters.contains(letter)) {
+
+                display.append(letter);
+
+            } else {
+
+                display.append('_');
+
+            }
+
+
+
+            if (i < secretWord.length() - 1) {
+
+                display.append(' ');
+
+            }
+
+        }
+
+
+
+        return display.toString();
+
+    }
+
+
+
+    private static String formatGuessedLetters(Set<Character> guessedLetters) {
+
+        if (guessedLetters.isEmpty()) {
+
+            return "none";
+
+        }
+
+
+
+        List<Character> sortedLetters = new ArrayList<>(guessedLetters);
+
+        Collections.sort(sortedLetters);
+
+
+
+        StringBuilder formatted = new StringBuilder();
+
+
+
+        for (int i = 0; i < sortedLetters.size(); i++) {
+
+            formatted.append(sortedLetters.get(i));
+
+
+
+            if (i < sortedLetters.size() - 1) {
+
+                formatted.append(", ");
+
+            }
+
+        }
+
+
+
+        return formatted.toString();
+
+    }
+
+
+
+    private static char readLetter(Set<Character> guessedLetters) {
+
+        while (true) {
+
+            System.out.print("Enter one letter: ");
+
+            String input = INPUT.nextLine().trim().toLowerCase();
+
+
+
+            if (input.length() != 1) {
+
+                System.out.println("Please enter exactly one character.");
+
+                continue;
+
+            }
+
+
+
+            char letter = input.charAt(0);
+
+
+
+            if (!Character.isLetter(letter)) {
+
+                System.out.println("Please enter a letter, not a number or symbol.");
+
+                continue;
+
+            }
+
+
+
+            if (guessedLetters.contains(letter)) {
+
+                System.out.println("You already guessed that letter.");
+
+                continue;
+
+            }
+
+
+
+            return letter;
+
+        }
+
+    }
+
+
+
+    private static boolean hasGuessedWord(
+
+        String secretWord,
+
+        Set<Character> guessedLetters
+
+    ) {
+
+        for (int i = 0; i < secretWord.length(); i++) {
+
+            if (!guessedLetters.contains(secretWord.charAt(i))) {
+
+                return false;
+
+            }
+
+        }
+
+
+
+        return true;
+
+    }
+
+
+
+    private static boolean askToPlayAgain() {
+
+        while (true) {
+
+            System.out.print("\nWould you like to play another round? (yes/no): ");
+
+            String answer = INPUT.nextLine().trim().toLowerCase();
+
+
+
+            if (answer.equals("yes") || answer.equals("y")) {
+
+                return true;
+
+            }
+
+
+
+            if (answer.equals("no") || answer.equals("n")) {
+
+                return false;
+
+            }
+
+
+
+            System.out.println("Please answer yes or no.");
+
+        }
+
+    }
+
+
+
+    private static void printSummary(
+
+        int roundsPlayed,
+
+        int roundsWon,
+
+        int totalWrongGuesses
+
+    ) {
+
+        System.out.println("\n======================================");
+
+        System.out.println("              FINAL SCORE");
+
+        System.out.println("======================================");
+
+        System.out.println("Rounds played: " + roundsPlayed);
+
+        System.out.println("Rounds won: " + roundsWon);
+
+        System.out.println("Rounds lost: " + (roundsPlayed - roundsWon));
+
+        System.out.println("Total incorrect guesses: " + totalWrongGuesseRate = (double) roundsWon / roundsPlayed * 100.0;
+
+            System.out.printf("Win rate: %.1f%%%n", winRate);
+
+        }
+
+
+
+        System.out.println("\nThanks for playing!");
+
+    }
+
+}
+
+```
+
+
+    private static final Random RANDOM
